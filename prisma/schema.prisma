@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  email    String
+  password String
+}
+
+model Seller {
+  id               Int    @id @default(autoincrement())
+  fullName         String
+  phoneNumber      String
+  email            String
+  img              String
+  debtSum          Int
+  PinCode          Int
+  DeferredPayments String
+  password         String
+  debterCount      Int
+  wallet           Int
+
+  Debter Debter[]
+
+  Notification Notification[]
+
+  Sample Sample[]
+}
+
+model Debter {
+  id       Int    @id @default(autoincrement())
+  name     String
+  address  String
+  debtSum  Int
+  note     String
+  sellerId Int
+  seller   Seller @relation(fields: [sellerId], references: [id])
+
+  Debt Debt[]
+
+  ImgOfDebter ImgOfDebter[]
+
+  PhoneOfDebter PhoneOfDebter[]
+
+  Notification Notification[]
+}
+
+model Debt {
+  id          Int      @id @default(autoincrement())
+  productName String
+  date        DateTime
+  term        String
+  description String
+  debterId    Int
+  debter      Debter   @relation(fields: [debterId], references: [id])
+
+  ImgOfDebt ImgOfDebt[]
+}
+
+model ImgOfDebter {
+  id       Int    @id @default(autoincrement())
+  name     String
+  debterId Int
+  debter   Debter @relation(fields: [debterId], references: [id])
+}
+
+model ImgOfDebt {
+  id     Int    @id @default(autoincrement())
+  name   String
+  debtId Int
+  debt   Debt   @relation(fields: [debtId], references: [id])
+}
+
+model PhoneOfDebter {
+  id       Int    @id @default(autoincrement())
+  number   String
+  debterId Int
+  debter   Debter @relation(fields: [debterId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  text      String
+  isSended  Boolean
+  sellerId  Int
+  debterId  Int
+  seller    Seller   @relation(fields: [sellerId], references: [id])
+  debter    Debter   @relation(fields: [debterId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Payments {
+  id       Int @id @default(autoincrement())
+  sellerId Int
+  debtorId Int
+  sum      Int
+}
+
+model Sample {
+  id       Int     @id @default(autoincrement())
+  text     String
+  isActive Boolean
+  sellerId Int
+  seller   Seller  @relation(fields: [sellerId], references: [id])
+}
