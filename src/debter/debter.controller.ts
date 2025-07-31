@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { DebterService } from './debter.service';
 import { CreateDebterDto } from './dto/create-debter.dto';
 import { UpdateDebterDto } from './dto/update-debter.dto';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 
 @Controller('debter')
 export class DebterController {
@@ -12,6 +13,8 @@ export class DebterController {
     return this.debterService.create(createDebterDto);
   }
 
+
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.debterService.findAll();

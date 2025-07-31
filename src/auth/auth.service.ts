@@ -47,7 +47,7 @@ export class AuthService {
     if (!isMatch) {
       throw new BadRequestException('Invalid credentials');
     }
-    let payload = { id: user.id };
+    let payload = { id: user.id, role: user.role, };
     return {
       token: this.jwt.sign(payload),
     };

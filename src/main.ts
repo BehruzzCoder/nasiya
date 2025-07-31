@@ -27,6 +27,7 @@ async function bootstrap() {
     .setTitle('Nasiya API')
     .setDescription('API documentation for Nasiya application')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
