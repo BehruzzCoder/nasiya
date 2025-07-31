@@ -4,13 +4,25 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { UploadModule } from './upload/upload.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
-  imports: [PrismaModule, AuthModule,JwtModule.register({
-    secret:process.env.JWT_SECRET || "secret",
-    global: true
-  })],
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads', 
+    }),
+    PrismaModule,
+    AuthModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'secret',
+      global: true,
+    }),
+    UploadModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
