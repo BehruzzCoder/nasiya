@@ -10,8 +10,8 @@ async function bootstrap() {
   app.use(
     ['/api'],
     basicAuth({
-      users: { admin: 'nmadur' }, 
-      challenge: true, 
+      users: { admin: `${process.env.BASIC_AUTH_PASSWORD}` },
+      challenge: true,
     }),
   );
 
