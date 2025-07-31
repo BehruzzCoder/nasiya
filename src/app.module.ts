@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UploadModule } from './upload/upload.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { DebterModule } from './debter/debter.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { join } from 'path';
       global: true,
     }),
     UploadModule,
+    DebterModule,
   ],
   controllers: [AppController],
   providers: [AppService],
