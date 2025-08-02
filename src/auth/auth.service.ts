@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginAuthDto } from './dto/login-auth.dto';
+import { AdminAuthRegister } from './dto/register-admin.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,11 +23,25 @@ export class AuthService {
     });
     return user;
   }
+  async AdminRegister(data:AdminAuthRegister){
+    const {password} = data
+    let hash = bcrypt.hashSync(password, 10)
+    const newAdmin = await this.prisma.admin.create({
+      data: {
+        ...data,
+        password: hash
+      }
+    })
+    return newAdmin
+  }
+  async AdminLogin(data:any){
+    
+  }
   async findAll() {
-    return this.prisma.seller.findMany();
+    return this.prisma.seller.findMany({ include: { Debter: true } });
   }
   async findOne(id: number) {
-    return this.prisma.seller.findUnique({ where: { id } });
+    return this.prisma.seller.findUnique({ where: { id }, include: { Debter: true } });
   }
   async update(id: number, updateAuthDto: UpdateAuthDto) {
     return this.prisma.seller.update({
@@ -47,7 +62,7 @@ export class AuthService {
     if (!isMatch) {
       throw new BadRequestException('Invalid credentials');
     }
-    let payload = { id: user.id, role: user.role, };
+    let payload = { id: user.id, role: "seller" };
     return {
       token: this.jwt.sign(payload),
     };

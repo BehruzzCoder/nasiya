@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Seller" ALTER COLUMN "wallet" DROP NOT NULL,
+ALTER COLUMN "wallet" SET DEFAULT 0;

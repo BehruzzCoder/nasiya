@@ -8,12 +8,13 @@ import { UploadModule } from './upload/upload.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { DebterModule } from './debter/debter.module';
+import { DebtModule } from './debt/debt.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads', 
+      serveRoot: '/uploads',
     }),
     PrismaModule,
     AuthModule,
@@ -23,6 +24,7 @@ import { DebterModule } from './debter/debter.module';
     }),
     UploadModule,
     DebterModule,
+    DebtModule,
   ],
   controllers: [AppController],
   providers: [AppService],

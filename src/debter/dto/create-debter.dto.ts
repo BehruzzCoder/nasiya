@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class CreateDebterDto {
     @IsString()
@@ -17,5 +17,9 @@ export class CreateDebterDto {
     @IsNumber()
     @ApiProperty({ example: 1000, description: 'Total debt amount' })
     debtSum: number;
+    @IsString({ each: true })
+    @IsNotEmpty({ each: true, message: 'Phone numbers cannot be empty' })
+    @ApiProperty({ isArray: true, type: String, example: ['+998901234567', '+998901234568'], description: 'List of phone numbers associated with the debtor' })
+    phoneNumber: string[];
 
 }

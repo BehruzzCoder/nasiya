@@ -3,37 +3,36 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
+     
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
-  @Post("register")
+  @Post("seller/register")
   create(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.register(createAuthDto);
   }
-  @Post("login")
+  @Post("seller/login")
   login(@Body() LoginAuthDto: LoginAuthDto) {
     return this.authService.login(LoginAuthDto);
   }
-
-
-  @Get()
+  @Get("seller")
   findAll() {
     return this.authService.findAll();
   }
 
-  @Get(':id')
+  @Get('seller/:id')
   findOne(@Param('id') id: string) {
     return this.authService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Patch('seller/:id')
   update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
     return this.authService.update(+id, updateAuthDto);
   }
 
-  @Delete(':id')
+  @Delete('seller/:id')
   remove(@Param('id') id: string) {
     return this.authService.remove(+id);
   }

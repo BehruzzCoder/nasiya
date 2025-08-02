@@ -17,7 +17,9 @@ model Admin {
   id       Int     @id @default(autoincrement())
   email    String
   password String
-  role     String? @default("admin")
+  name    String
+  login   String
+  IsActive Boolean? @default(false)
 }
 
 model Seller {
@@ -31,8 +33,7 @@ model Seller {
   DeferredPayments String
   password         String
   debterCount      Int
-  wallet           Int
-  role             String? @default("seller")
+  wallet           Int?    @default(0)
 
   Debter Debter[]
 
@@ -62,7 +63,7 @@ model Debter {
 model Debt {
   id          Int      @id @default(autoincrement())
   productName String
-  date        DateTime
+  date        String
   term        String
   description String
   debterId    Int
