@@ -13,7 +13,11 @@ import { AdminLoginDto } from './dto/admin-login.dto';
 export class AuthService {
   constructor(private readonly otp: OtpService, private readonly prisma: PrismaService, private readonly jwt: JwtService) { }
   async register(createAuthDto: CreateAuthDto) {
-    const { password, PinCode, DeferredPayments } = createAuthDto;
+    const admin = await this.prisma.admin.findFirst({ where: { email: createAuthDto.email } })
+    if (admin) {
+      throw new BadRequestException("email already exits")
+    }
+    const { password, DeferredPayments } = createAuthDto;
     const hash = await bcrypt.hash(password, 10);
     const user = await this.prisma.seller.create({
       data: {
@@ -27,6 +31,10 @@ export class AuthService {
   }
   async AdminRegister(data: AdminAuthRegister) {
     const { password } = data
+    let seller = await this.prisma.seller.findFirst({ where: { email: data.email } })
+    if (seller) {
+      throw new BadRequestException("email already exits")
+    }
     let hash = bcrypt.hashSync(password, 10)
     const newAdmin = await this.prisma.admin.create({
       data: {
