@@ -23,11 +23,4 @@ export class AdminAuthRegister {
   })
   @IsNotEmpty({ message: 'Ism bosh bolmasligi kerak' })
   name: string;
-
-  @ApiProperty({
-    example: 'admin123',
-    description: 'Admin login nomi',
-  })
-  @IsNotEmpty({ message: 'Login bosh bolmasligi kerak' })
-  login: string;
 }
