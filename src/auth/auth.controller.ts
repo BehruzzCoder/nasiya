@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -15,7 +17,15 @@ import { AdminAuthRegister } from './dto/register-admin.dto';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { OtpVerify } from './dto/otp-verify.dto';
 import { ResendOtp } from './dto/resend-top.dto';
+import { UpdateAdminDto } from './dto/admin-update.dto';
+import { JwtAuthGuard } from './jwt/jwt.guard';
+import { Request } from 'express';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { Roles } from 'src/decorator/roles.decorator';
 
+@Roles("ADMIN")
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -27,6 +37,14 @@ export class AuthController {
   @Post('admin/login')
   loginAdmin(@Body() adminLoginDto: AdminLoginDto) {
     return this.authService.AdminLogin(adminLoginDto);
+  }
+
+  @Patch('admin/update')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  updateAdmin(@Req() req: Request, @Body() updateAdminDto: UpdateAdminDto) {
+    const userId = (req as any).user?.id;
+    return this.authService.updateAdmin(userId, updateAdminDto);
   }
 
   @Post('seller/register')

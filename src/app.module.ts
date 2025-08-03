@@ -9,6 +9,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { DebterModule } from './debter/debter.module';
 import { DebtModule } from './debt/debt.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { DebtModule } from './debt/debt.module';
     UploadModule,
     DebterModule,
     DebtModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

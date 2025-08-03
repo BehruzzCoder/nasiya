@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,6 +8,7 @@ import { LoginAuthDto } from './dto/login-auth.dto';
 import { AdminAuthRegister } from './dto/register-admin.dto';
 import { OtpService } from 'src/utils/otp.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
+import { UpdateAdminDto } from './dto/admin-update.dto';
 
 @Injectable()
 export class AuthService {
@@ -122,4 +123,23 @@ export class AuthService {
     this.otp.sendOtp(email)
     return { message: "otp muvaffaqiyatli jonatildi" }
   }
+  async removeAdmin(id: number) {
+    let admin = await this.prisma.admin.findFirst({ where: { id } })
+    if (!admin) {
+      throw new NotFoundException("admin not found")
+    }
+    let deleted = await this.prisma.admin.delete({ where: { id } })
+    return admin
+  }
+  async allAdmin() {
+    let all = await this.prisma.admin.findMany()
+    return all
+  }
+  async updateAdmin(id: number, updateData: UpdateAdminDto) {
+  return this.prisma.admin.update({
+    where: { id },
+    data: updateData,
+  });
+}
+
 }

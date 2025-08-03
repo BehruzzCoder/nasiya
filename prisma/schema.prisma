@@ -60,8 +60,8 @@ model Debt {
   id          Int    @id @default(autoincrement())
   productName String
   date        String
-  term        String
   duration    Int @default(1)
+  amount BigInt
   description String
   debterId    Int
   debter      Debter @relation(fields: [debterId], references: [id])
