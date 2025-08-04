@@ -6,11 +6,11 @@ import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('notification')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) { }
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Req() req: Request, @Body() createNotificationDto: CreateNotificationDto) {
     const sellerId = (req as any).user.id;

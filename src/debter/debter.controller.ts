@@ -6,6 +6,8 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { Roles } from 'src/decorator/roles.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('debter')
 export class DebterController {
   constructor(private readonly debterService: DebterService) { }
