@@ -24,18 +24,6 @@ export class CreateAuthDto {
     img: string;
 
     @IsNumber()
-    @ApiProperty({ example: 500000, description: 'Umumiy qarzdorlik summasi' })
-    debtSum: number;
-
-    @IsNumber()
-    @ApiProperty({ example: 1234, description: '4 xonali PIN kod' })
-    PinCode: number;
-
-    @IsString()
-    @ApiProperty({ example: '3 oy', description: 'Kechiktirilgan tolov muddati (masalan: 3 oy)' })
-    DeferredPayments: string;
-
-    @IsNumber()
     @ApiProperty({ example: 5, description: 'Debtorlar soni' })
     debterCount: number;
 

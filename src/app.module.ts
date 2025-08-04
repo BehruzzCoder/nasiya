@@ -10,6 +10,7 @@ import { join } from 'path';
 import { DebterModule } from './debter/debter.module';
 import { DebtModule } from './debt/debt.module';
 import { NotificationModule } from './notification/notification.module';
+import { RepayModule } from './repay/repay.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { NotificationModule } from './notification/notification.module';
     DebterModule,
     DebtModule,
     NotificationModule,
+    RepayModule,
   ],
   controllers: [AppController],
   providers: [AppService],

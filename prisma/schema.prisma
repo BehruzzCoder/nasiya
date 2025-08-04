@@ -27,8 +27,6 @@ model Seller {
   phoneNumber      String
   email            String
   img              String
-  debtSum          Int
-  DeferredPayments String
   password         String
   debterCount      Int
   wallet           Int?           @default(0)
@@ -57,16 +55,18 @@ model Debter {
 }
 
 model Debt {
-  id          Int    @id @default(autoincrement())
-  productName String
-  date        String
-  duration    Int @default(1)
-  amount BigInt
-  description String
-  debterId    Int
-  debter      Debter @relation(fields: [debterId], references: [id])
+  id             Int    @id @default(autoincrement())
+  productName    String
+  date           String
+  duration       Int    @default(1)
+  amount         Int
+  monthly_amount Int
+  description    String
+  debterId       Int
+  debter         Debter @relation(fields: [debterId], references: [id])
 
-  ImgOfDebt ImgOfDebt[]
+  ImgOfDebt        ImgOfDebt[]
+  PaymentSchedules PaymentSchedules[]
 }
 
 model ImgOfDebter {
@@ -101,17 +101,27 @@ model Notification {
   createdAt DateTime @default(now())
 }
 
-model Payments {
-  id       Int @id @default(autoincrement())
-  sellerId Int
-  debtorId Int
-  sum      Int
-}
-
 model Sample {
   id       Int     @id @default(autoincrement())
   text     String
   isActive Boolean
   sellerId Int
   seller   Seller  @relation(fields: [sellerId], references: [id])
+}
+
+model PaymentSchedules {
+  id              Int      @id @default(autoincrement())
+  debt_id         Int
+  debt            Debt     @relation(fields: [debt_id], references: [id])
+  date            DateTime 
+  expected_amount Int
+  updatedAt       DateTime @updatedAt
+  status          PaymentSchedulesStatus  @default(PENDING)
+  @@unique([date])
+}
+
+enum PaymentSchedulesStatus {
+  PENDING
+  PAID
+  OVERDUE
 }

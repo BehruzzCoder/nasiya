@@ -23,12 +23,11 @@ import { Request } from 'express';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from 'src/decorator/roles.decorator';
 
-@Roles("ADMIN")
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
+  @ApiBearerAuth()
   @Post('admin/register')
   registerAdmin(@Body() adminRegisterDto: AdminAuthRegister) {
     return this.authService.AdminRegister(adminRegisterDto);
@@ -39,14 +38,16 @@ export class AuthController {
     return this.authService.AdminLogin(adminLoginDto);
   }
 
-  @Patch('admin/update')
+  @Roles("ADMIN")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Patch('admin/update')
   updateAdmin(@Req() req: Request, @Body() updateAdminDto: UpdateAdminDto) {
     const userId = (req as any).user?.id;
     return this.authService.updateAdmin(userId, updateAdminDto);
   }
 
+  @ApiBearerAuth()
   @Post('seller/register')
   registerSeller(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.register(createAuthDto);
@@ -57,15 +58,27 @@ export class AuthController {
     return this.authService.login(loginAuthDto);
   }
 
+  @Roles("ADMIN")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+
   @Get('seller')
   findAllSellers() {
     return this.authService.findAll();
   }
 
+  @Roles("ADMIN")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+
   @Get('seller/:id')
   findOneSeller(@Param('id') id: string) {
     return this.authService.findOne(+id);
   }
+
+  @Roles("ADMIN")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
 
   @Patch('seller/:id')
   updateSeller(
@@ -74,6 +87,10 @@ export class AuthController {
   ) {
     return this.authService.update(+id, updateAuthDto);
   }
+
+  @Roles("ADMIN")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
 
   @Delete('seller/:id')
   removeSeller(@Param('id') id: string) {
@@ -86,7 +103,7 @@ export class AuthController {
     return this.authService.verifyOtp(OtpVerify.email, OtpVerify.otp);
   }
   @Post('resend-otp')
-  resendOtp(@Body() ResendOtp:ResendOtp) {
+  resendOtp(@Body() ResendOtp: ResendOtp) {
     return this.authService.sendOtp(ResendOtp.email);
   }
 }

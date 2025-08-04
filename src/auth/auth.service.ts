@@ -18,13 +18,12 @@ export class AuthService {
     if (admin) {
       throw new BadRequestException("email already exits")
     }
-    const { password, DeferredPayments } = createAuthDto;
+    const { password } = createAuthDto;
     const hash = await bcrypt.hash(password, 10);
     const user = await this.prisma.seller.create({
       data: {
         ...createAuthDto,
         password: hash,
-        DeferredPayments: DeferredPayments,
       },
     });
     this.otp.sendOtp(createAuthDto.email)

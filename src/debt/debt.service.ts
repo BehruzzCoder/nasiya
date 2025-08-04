@@ -16,11 +16,12 @@ export class DebtService {
     if (!debter) {
       throw new BadRequestException('Debter not found');
     }
-
+    let monthly_amount = createDebtDto.amount / createDebtDto.duration
     const newDebt = await this.prisma.debt.create({
       data: {
         ...debtData,
         debterId,
+        monthly_amount
       },
     });
 
@@ -33,6 +34,19 @@ export class DebtService {
       });
 
     }
+    for(let i =0; i <= createDebtDto.duration;i++){
+       const dueDate = new Date();
+        dueDate.setMonth(dueDate.getMonth() + i);
+
+        await this.prisma.paymentSchedules.create({
+          data: {
+            debt_id:newDebt.id,
+            expected_amount:newDebt.monthly_amount,
+            date:dueDate
+
+          },
+        });
+    }
 
     return newDebt;
   }
@@ -40,7 +54,7 @@ export class DebtService {
 
   findAll() {
     const debtALL = this.prisma.debt.findMany({
-      include: { debter: true, ImgOfDebt: true }
+      include: { debter: true, ImgOfDebt: true,PaymentSchedules:true }
     });
     return debtALL;
   }

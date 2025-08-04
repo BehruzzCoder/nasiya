@@ -7,10 +7,6 @@ export class CreateNotificationDto {
   @IsNotEmpty()
   text: string;
 
-  @ApiProperty({ example: 1, description: 'Xabar qaysi sotuvchiga tegishli' })
-  @IsNumber()
-  sellerId: number;
-
   @ApiProperty({ example: 2, description: 'Qaysi qarzdorga tegishli' })
   @IsNumber()
   debterId: number;

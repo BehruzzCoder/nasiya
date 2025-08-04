@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateDebterDto } from './dto/create-debter.dto';
 import { UpdateDebterDto } from './dto/update-debter.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,10 +7,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class DebterService {
   constructor(private readonly prisma: PrismaService) { }
   async create(createDebterDto: CreateDebterDto) {
-    const { phoneNumber, ...debterData } = createDebterDto;
+    const { phoneNumber, sellerId, ...debterData } = createDebterDto;
+    let seller = await this.prisma.seller.findFirst({ where: { id: sellerId } })
+    if (!seller) {
+      throw new BadRequestException("seller not found")
+    }
 
     const newUser = await this.prisma.debter.create({
-      data: debterData,
+      data: { ...debterData, sellerId },
     });
 
     if (phoneNumber && phoneNumber.length > 0) {
@@ -27,11 +31,11 @@ export class DebterService {
 
 
   async findAll() {
-    return await this.prisma.debter.findMany({ include: { Debt: true, PhoneOfDebter: true } });
+    return await this.prisma.debter.findMany({ include: { Debt: true, PhoneOfDebter: true, Notification: true } });
   }
 
   async findOne(id: number) {
-    return await this.prisma.debter.findUnique({ where: { id }, include: { Debt: true, PhoneOfDebter: true } });
+    return await this.prisma.debter.findUnique({ where: { id }, include: { Debt: true, PhoneOfDebter: true, Notification: true } });
   }
 
   async update(id: number, updateDebterDto: UpdateDebterDto) {

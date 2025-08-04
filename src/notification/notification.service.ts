@@ -7,9 +7,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class NotificationService {
   constructor(private prisma: PrismaService) { }
 
-  async create(createNotificationDto: CreateNotificationDto) {
+  async create(createNotificationDto: CreateNotificationDto,sellerId: number) {
     return await this.prisma.notification.create({
-       data:{...createNotificationDto , isSended:true}
+       data:{...createNotificationDto ,sellerId, isSended:true}
 
     });
   }
