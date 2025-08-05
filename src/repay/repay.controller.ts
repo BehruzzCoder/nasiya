@@ -1,31 +1,26 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { RepayService } from './repay.service';
-import { PayByAmountDto } from './dto/pay-by-amount.dto';
 import { PayByMonthDto } from './dto/pay-by-month.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { PayByAmountDto } from './dto/pay-by-amount.dto';
+import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
-import { Roles } from 'src/decorator/roles.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Roles("SELLER", "ADMIN")
 @Controller('repay')
 export class RepayController {
   constructor(private readonly repayService: RepayService) { }
 
   @Post('by-month')
-  payByMonth(@Body() dto: PayByMonthDto) {
-    return this.repayService.payByMonth(dto);
+  payByMonth(@Body() dto: PayByMonthDto, @Req() req: Request) {
+    const sellerId = (req as any).user.id;
+    return this.repayService.payByMonth(dto, sellerId);
   }
 
   @Post('by-amount')
-  payByAmount(@Body() dto: PayByAmountDto) {
-    return this.repayService.payByAmount(dto);
+  payByAmount(@Body() dto: PayByAmountDto, @Req() req: Request) {
+    const sellerId = (req as any).user.id;
+    return this.repayService.payByAmount(dto, sellerId);
   }
 }
