@@ -135,10 +135,53 @@ export class AuthService {
     return all
   }
   async updateAdmin(id: number, updateData: UpdateAdminDto) {
-  return this.prisma.admin.update({
-    where: { id },
-    data: updateData,
-  });
-}
+    return this.prisma.admin.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+  async forgotPassword(email: string) {
+    const user = await this.prisma.seller.findFirst({ where: { email } });
+    const admin = await this.prisma.admin.findFirst({ where: { email } });
+
+    if (!user && !admin) {
+      throw new BadRequestException("Email not found");
+    }
+
+    await this.otp.sendOtp(email);
+    return { message: "OTP emailga yuborildi" };
+  }
+
+  async resetPassword(email: string, otp: string, newPassword: string) {
+    const isValid = this.otp.verifyOtp(email, otp);
+    if (!isValid) {
+      throw new BadRequestException("OTP noto'g'ri yoki eskirgan");
+    }
+
+    const user = await this.prisma.seller.findFirst({ where: { email } });
+    const admin = await this.prisma.admin.findFirst({ where: { email } });
+
+    if (!user && !admin) {
+      throw new BadRequestException("Email topilmadi");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    if (user) {
+      await this.prisma.seller.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      });
+      return { message: "Seller paroli yangilandi" };
+    }
+
+    if (admin) {
+      await this.prisma.admin.update({
+        where: { id: admin.id },
+        data: { password: hashedPassword },
+      });
+      return { message: "Admin paroli yangilandi" };
+    }
+  }
 
 }

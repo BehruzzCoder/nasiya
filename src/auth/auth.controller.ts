@@ -20,8 +20,11 @@ import { ResendOtp } from './dto/resend-top.dto';
 import { UpdateAdminDto } from './dto/admin-update.dto';
 import { JwtAuthGuard } from './jwt/jwt.guard';
 import { Request } from 'express';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiProperty } from '@nestjs/swagger';
 import { Roles } from 'src/decorator/roles.decorator';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { isEmail } from 'class-validator';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 
 @Controller('auth')
@@ -106,4 +109,14 @@ export class AuthController {
   resendOtp(@Body() ResendOtp: ResendOtp) {
     return this.authService.sendOtp(ResendOtp.email);
   }
+  @Post('forgot-password')
+  forgotPassword(@Body() data: ForgotPasswordDto) {
+    return this.authService.forgotPassword(data.email);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() data: ResetPasswordDto) {
+    return this.authService.resetPassword(data.email, data.otp, data.newPassword);
+  }
+
 }
