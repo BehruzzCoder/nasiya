@@ -34,6 +34,8 @@ model Seller {
   Debter           Debter[]
   Notification     Notification[]
   Sample           Sample[]
+
+  Namuna Namuna[]
 }
 
 model Debter {
@@ -118,6 +120,13 @@ model PaymentSchedules {
   updatedAt       DateTime @updatedAt
   status          PaymentSchedulesStatus  @default(PENDING)
   @@unique([date])
+}
+model Namuna{
+  id Int @id @default(autoincrement())
+  isActive Boolean @default(true)
+  text String
+  sellerId Int
+  seller Seller @relation(fields: [sellerId], references: [id])
 }
 
 enum PaymentSchedulesStatus {

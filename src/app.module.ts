@@ -11,6 +11,7 @@ import { DebterModule } from './debter/debter.module';
 import { DebtModule } from './debt/debt.module';
 import { NotificationModule } from './notification/notification.module';
 import { RepayModule } from './repay/repay.module';
+import { NamunaModule } from './namuna/namuna.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { RepayModule } from './repay/repay.module';
     DebtModule,
     NotificationModule,
     RepayModule,
+    NamunaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
