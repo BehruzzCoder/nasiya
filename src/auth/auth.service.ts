@@ -183,16 +183,27 @@ export class AuthService {
       return { message: "Admin paroli yangilandi" };
     }
   }
-  async me(id){       
-  let admin = await this.prisma.admin.findUnique({where:{id}}) 
-  let seller=  await  this.prisma.seller.findUnique({where:{id}})  
-  if(!seller){
-    return admin
-  }   
-  if(!admin){
-    return seller
-  } 
-  return ""
+  async me(id: number, role: string) {       
+  const admin = await this.prisma.admin.findUnique({
+    where: { id }
+  });
+
+  const seller = await this.prisma.seller.findUnique({
+    where: { id }
+  });
+
+  if (admin && role === 'ADMIN') {
+    return { admin };
   }
+  if (seller && role === 'SELLER') {
+    return { seller };
+  }
+  if (admin && seller) {
+    return { admin, seller };
+  }
+
+  return "hech nima topilmadi";
+}
+
 
 }

@@ -119,12 +119,12 @@ export class AuthController {
     return this.authService.resetPassword(data.email, data.otp, data.newPassword);
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
-
-  // @Get('seller')
-  // findAllSellers() {
-  //   return this.authService.findAll();
-  // }
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getProfile(@Req() req: any) {
+    const { id, role } = req.user; 
+    return this.authService.me(id, role);
+}
 
 }
