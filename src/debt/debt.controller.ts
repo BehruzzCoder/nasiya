@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards } from '@nestjs/common';
 import { DebtService } from './debt.service';
 import { CreateDebtDto } from './dto/create-debt.dto';
 import { UpdateDebtDto } from './dto/update-debt.dto';
-import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 
 @Controller('debt')
 export class DebtController {
@@ -12,27 +12,40 @@ export class DebtController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createDebtDto: CreateDebtDto) {
-    return this.debtService.create(createDebtDto);
+  create(@Req() req, @Body() createDebtDto: CreateDebtDto) {
+    const sellerId = (req as any).user.id;
+    return this.debtService.create(sellerId, createDebtDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.debtService.findAll();
+  findAll(@Req() req) {
+    const sellerId = (req as any).user.id;
+    return this.debtService.findAll(sellerId);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.debtService.findOne(+id);
+  findOne(@Req() req, @Param('id') id: string) {
+    const sellerId = (req as any).user.id;
+    return this.debtService.findOne(sellerId, +id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDebtDto: UpdateDebtDto) {
-    return this.debtService.update(+id, updateDebtDto);
+  update(@Req() req, @Param('id') id: string, @Body() updateDebtDto: UpdateDebtDto) {
+    const sellerId = (req as any).user.id;
+    return this.debtService.update(sellerId, +id, updateDebtDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.debtService.remove(+id);
+  remove(@Req() req, @Param('id') id: string) {
+    const sellerId = (req as any).user.id;
+    return this.debtService.remove(sellerId, +id);
   }
 }

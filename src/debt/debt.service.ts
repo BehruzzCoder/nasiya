@@ -1,82 +1,113 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDebtDto } from './dto/create-debt.dto';
 import { UpdateDebtDto } from './dto/update-debt.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class DebtService {
-  constructor(private readonly prisma: PrismaService) { }
-  async create(createDebtDto: CreateDebtDto) {
-    const { debterId, imgOfDebt, ...debtData } = createDebtDto;
+  constructor(private readonly prisma: PrismaService) {}
 
-    const debter = await this.prisma.debter.findUnique({
-      where: { id: debterId },
+  async create(sellerId: number, createDebtDto: CreateDebtDto) {
+  const { debterId, productName, date, description, imgOfDebt, amount, duration } = createDebtDto;
+
+  const debter = await this.prisma.debter.findFirst({
+    where: { id: debterId, sellerId }
+  });
+  if (!debter) {
+    throw new NotFoundException('Debtor not found');
+  }
+
+  const monthly_amount = Math.floor(amount / duration); // 🔹 Avtomatik hisoblash
+
+  const newDebt = await this.prisma.debt.create({
+    data: {
+      debter: { connect: { id: debterId } },
+      productName,
+      date,
+      description,
+      amount,
+      duration,
+      monthly_amount,
+    },
+  });
+
+  if (imgOfDebt && imgOfDebt.length > 0) {
+    await this.prisma.imgOfDebt.createMany({
+      data: imgOfDebt.map(name => ({
+        name,
+        debtId: newDebt.id,
+      })),
     });
+  }
 
-    if (!debter) {
-      throw new BadRequestException('Debter not found');
-    }
-    let monthly_amount = createDebtDto.amount / createDebtDto.duration
-    const newDebt = await this.prisma.debt.create({
-      data: {
-        ...debtData,
-        debterId,
-        monthly_amount
+  return newDebt;
+}
+
+  async findAll(sellerId: number) {
+    return this.prisma.debt.findMany({
+      where: {
+        debter: { sellerId }
       },
+      include: {
+        debter: true,
+        ImgOfDebt: true,
+        PaymentSchedules: true
+      }
     });
-
-    if (imgOfDebt && imgOfDebt.length > 0) {
-      await this.prisma.imgOfDebt.createMany({
-        data: imgOfDebt.map((imgName) => ({
-          name: imgName,
-          debtId: newDebt.id,
-        })),
-      });
-
-    }
-    for(let i =0; i <= createDebtDto.duration;i++){
-       const dueDate = new Date();
-        dueDate.setMonth(dueDate.getMonth() + i);
-
-        await this.prisma.paymentSchedules.create({
-          data: {
-            debt_id:newDebt.id,
-            expected_amount:newDebt.monthly_amount,
-            date:dueDate
-
-          },
-        });
-    }
-
-    return newDebt;
   }
 
-
-  findAll() {
-    const debtALL = this.prisma.debt.findMany({
-      include: { debter: true, ImgOfDebt: true,PaymentSchedules:true }
+  async findOne(sellerId: number, id: number) {
+    const debt = await this.prisma.debt.findUnique({
+      where: { id },
+      include: {
+        debter: true,
+        ImgOfDebt: true,
+        PaymentSchedules: true
+      }
     });
-    return debtALL;
+
+    if (!debt) {
+      throw new NotFoundException('Debt not found');
+    }
+    if (debt.debter.sellerId !== sellerId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return debt;
   }
 
-  findOne(id: number) {
-    return this.prisma.debt.findUnique({
+  async update(sellerId: number, id: number, updateDebtDto: UpdateDebtDto) {
+    const debt = await this.prisma.debt.findUnique({
       where: { id },
       include: { debter: true }
     });
-  }
 
-  update(id: number, updateDebtDto: UpdateDebtDto) {
+    if (!debt) {
+      throw new NotFoundException('Debt not found');
+    }
+    if (debt.debter.sellerId !== sellerId) {
+      throw new ForbiddenException('Access denied');
+    }
+
     return this.prisma.debt.update({
       where: { id },
-      data: updateDebtDto,
-      include: { debter: true }
+      data: updateDebtDto
     });
   }
 
-  remove(id: number) {
-    return this.prisma.debt.delete({
-      where: { id }
+  async remove(sellerId: number, id: number) {
+    const debt = await this.prisma.debt.findUnique({
+      where: { id },
+      include: { debter: true }
     });
+
+    if (!debt) {
+      throw new NotFoundException('Debt not found');
+    }
+    if (debt.debter.sellerId !== sellerId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    return this.prisma.debt.delete({ where: { id } });
   }
 }

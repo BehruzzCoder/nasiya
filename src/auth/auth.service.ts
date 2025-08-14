@@ -183,5 +183,16 @@ export class AuthService {
       return { message: "Admin paroli yangilandi" };
     }
   }
+  async me(id){       
+  let admin = await this.prisma.admin.findUnique({where:{id}}) 
+  let seller=  await  this.prisma.seller.findUnique({where:{id}})  
+  if(!seller){
+    return admin
+  }   
+  if(!admin){
+    return seller
+  } 
+  return ""
+  }
 
 }

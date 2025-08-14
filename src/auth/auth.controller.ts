@@ -119,4 +119,12 @@ export class AuthController {
     return this.authService.resetPassword(data.email, data.otp, data.newPassword);
   }
 
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
+
+  // @Get('seller')
+  // findAllSellers() {
+  //   return this.authService.findAll();
+  // }
+
 }
