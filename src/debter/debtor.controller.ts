@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
-import { DebterService } from './debter.service';
+import { DebterService } from './debtor.service';
 import { CreateDebterDto } from './dto/create-debter.dto';
 import { UpdateDebterDto } from './dto/update-debter.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
@@ -8,7 +8,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller('debter')
+@Controller('debtor')
 export class DebterController {
   constructor(private readonly debterService: DebterService) { }
 

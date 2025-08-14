@@ -7,7 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UploadModule } from './upload/upload.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { DebterModule } from './debter/debter.module';
+import { DebterModule } from './debter/debtor.module';
 import { DebtModule } from './debt/debt.module';
 import { NotificationModule } from './notification/notification.module';
 import { RepayModule } from './repay/repay.module';
