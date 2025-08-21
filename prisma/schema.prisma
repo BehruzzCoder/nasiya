@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -22,52 +16,49 @@ model Admin {
 }
 
 model Seller {
-  id               Int            @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())
   fullName         String
   phoneNumber      String
   email            String
   img              String
-  password         String
   debterCount      Int
-  wallet           Int?           @default(0)
-  isActive         Boolean        @default(false)
+  wallet           Int?             @default(0)
+  password         String
+  isActive         Boolean          @default(false)
   Debter           Debter[]
+  Namuna           Namuna[]
   Notification     Notification[]
+  PaymentHistories PaymentHistory[]
   Sample           Sample[]
-
-  Namuna Namuna[]
 }
 
 model Debter {
-  id       Int    @id @default(autoincrement())
-  name     String
-  address  String
-  debtSum  Int
-  note     String
-  sellerId Int
-  seller   Seller @relation(fields: [sellerId], references: [id])
-
-  Debt Debt[]
-
-  ImgOfDebter ImgOfDebter[]
-
-  PhoneOfDebter PhoneOfDebter[]
-
-  Notification Notification[]
+  id               Int              @id @default(autoincrement())
+  name             String
+  address          String
+  debtSum          Int
+  note             String
+  sellerId         Int
+  Debt             Debt[]
+  seller           Seller           @relation(fields: [sellerId], references: [id])
+  ImgOfDebter      ImgOfDebter[]
+  Notification     Notification[]
+  PaymentHistories PaymentHistory[]
+  PhoneOfDebter    PhoneOfDebter[]
 }
 
 model Debt {
-  id             Int    @id @default(autoincrement())
-  productName    String
-  date           String
-  duration       Int    @default(1)
-  amount         Int
-  monthly_amount Int
-  description    String
-  debterId       Int
-  debter         Debter @relation(fields: [debterId], references: [id])
-
+  id               Int                @id @default(autoincrement())
+  productName      String
+  date             String
+  description      String
+  debterId         Int
+  duration         Int                @default(1)
+  amount           Int
+  monthly_amount   Int
+  debter           Debter             @relation(fields: [debterId], references: [id])
   ImgOfDebt        ImgOfDebt[]
+  PaymentHistories PaymentHistory[]
   PaymentSchedules PaymentSchedules[]
 }
 
@@ -98,9 +89,10 @@ model Notification {
   isSended  Boolean
   sellerId  Int
   debterId  Int
-  seller    Seller   @relation(fields: [sellerId], references: [id])
-  debter    Debter   @relation(fields: [debterId], references: [id])
+  namunaId Int?
   createdAt DateTime @default(now())
+  debter    Debter   @relation(fields: [debterId], references: [id])
+  seller    Seller   @relation(fields: [sellerId], references: [id])
 }
 
 model Sample {
@@ -112,21 +104,38 @@ model Sample {
 }
 
 model PaymentSchedules {
-  id              Int      @id @default(autoincrement())
-  debt_id         Int
-  debt            Debt     @relation(fields: [debt_id], references: [id])
-  date            DateTime 
-  expected_amount Int
-  updatedAt       DateTime @updatedAt
-  status          PaymentSchedulesStatus  @default(PENDING)
-  @@unique([date])
+  id               Int                    @id @default(autoincrement())
+  debt_id          Int
+  date             DateTime               @unique
+  expected_amount  Int
+  updatedAt        DateTime               @updatedAt
+  status           PaymentSchedulesStatus @default(PENDING)
+  PaymentHistories PaymentHistory[]
+  debt             Debt                   @relation(fields: [debt_id], references: [id])
 }
-model Namuna{
-  id Int @id @default(autoincrement())
+
+model Namuna {
+  id       Int     @id @default(autoincrement())
   isActive Boolean @default(true)
-  text String
+  text     String
   sellerId Int
-  seller Seller @relation(fields: [sellerId], references: [id])
+  seller   Seller  @relation(fields: [sellerId], references: [id])
+}
+
+model PaymentHistory {
+  id         Int               @id @default(autoincrement())
+  amount     Int
+  paidAt     DateTime          @default(now())
+  method     String
+  note       String?
+  debterId   Int
+  sellerId   Int
+  debtId     Int
+  scheduleId Int?
+  debt       Debt              @relation(fields: [debtId], references: [id])
+  debter     Debter            @relation(fields: [debterId], references: [id])
+  schedule   PaymentSchedules? @relation(fields: [scheduleId], references: [id])
+  seller     Seller            @relation(fields: [sellerId], references: [id])
 }
 
 enum PaymentSchedulesStatus {

@@ -20,6 +20,9 @@ export class UploadController {
     constructor(private readonly uploadService: UploadService) { }
 
     @Post()
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard)
+    
     @ApiConsumes('multipart/form-data')
     @ApiBody({
         schema: {

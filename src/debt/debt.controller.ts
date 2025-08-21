@@ -4,13 +4,15 @@ import { CreateDebtDto } from './dto/create-debt.dto';
 import { UpdateDebtDto } from './dto/update-debt.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { Roles } from 'src/decorator/roles.decorator';
+import { RolesGuard } from 'src/auth/jwt/roles.guard';
 
 @Controller('debt')
 export class DebtController {
   constructor(private readonly debtService: DebtService) {}
-
+  @Roles('SELLER')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
   create(@Req() req, @Body() createDebtDto: CreateDebtDto) {
     const sellerId = (req as any).user.id;

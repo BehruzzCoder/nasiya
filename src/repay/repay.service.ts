@@ -1,9 +1,8 @@
 import {
   Injectable,
-  NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { PaymentSchedulesStatus } from '@prisma/client';
+import { PaymentSchedulesStatus, Prisma } from '@prisma/client';
 import { PayByAmountDto } from './dto/pay-by-amount.dto';
 import { PayByMonthDto } from './dto/pay-by-month.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -19,10 +18,9 @@ export class RepayService {
     const debt = await this.prisma.debt.findFirst({
       where: {
         id: dto.debtId,
-        debter: {
-          sellerId: sellerId, // 👈 faqat o‘zining debteri bo‘lsa
-        },
+        debter: { sellerId },
       },
+      include: { debter: true },
     });
 
     if (!debt) throw new ForbiddenException('Bu qarz sizga tegishli emas');
@@ -32,82 +30,127 @@ export class RepayService {
         debt_id: dto.debtId,
         status: PaymentSchedulesStatus.PENDING,
       },
-      orderBy: {
-        date: 'asc',
-      },
+      orderBy: { date: 'asc' },
       take: dto.months,
     });
 
+    if (!schedules.length) {
+      return { message: 'Barcha qarzlar allaqachon yopilgan' };
+    }
+
     const scheduleIds = schedules.map((s) => s.id);
+    const totalPaid = schedules.reduce((sum, s) => sum + s.expected_amount, 0);
 
     await this.prisma.$transaction([
       this.prisma.debt.update({
         where: { id: dto.debtId },
-        data: {
-          duration: { decrement: dto.months },
-        },
+        data: { duration: { decrement: dto.months } },
       }),
       this.prisma.paymentSchedules.updateMany({
         where: { id: { in: scheduleIds } },
         data: { status: PaymentSchedulesStatus.PAID },
+      }),
+      this.prisma.paymentHistory.create({
+        data: {
+          amount: totalPaid,
+          method: 'CASH',
+          sellerId,
+          debterId: debt.debterId,
+          debtId: debt.id,
+        },
       }),
     ]);
 
     return { message: `${dto.months} oylik qarz to'landi` };
   }
 
-  // ✅ Pul miqdori bo‘yicha to‘lov
   async payByAmount(dto: PayByAmountDto, sellerId: number) {
     const debt = await this.prisma.debt.findFirst({
       where: {
         id: dto.debtId,
-        debter: {
-          sellerId: sellerId,
-        },
+        debter: { sellerId },
       },
+      include: { debter: true },
     });
 
     if (!debt) throw new ForbiddenException('Bu qarz sizga tegishli emas');
 
     const monthlyAmount = debt.monthly_amount;
-    const fullMonths = Math.floor(dto.amount / monthlyAmount);
-    const totalPay = fullMonths * monthlyAmount;
+    let remainingAmount = dto.amount;
 
     const schedules = await this.prisma.paymentSchedules.findMany({
-      where: {
-        debt_id: dto.debtId,
-        status: PaymentSchedulesStatus.PENDING,
-      },
-      orderBy: {
-        date: 'asc',
-      },
-      take: fullMonths,
+      where: { debt_id: dto.debtId, status: PaymentSchedulesStatus.PENDING },
+      orderBy: { date: 'asc' },
     });
 
-    const scheduleIds = schedules.map((s) => s.id);
+    if (!schedules.length) {
+      return { message: 'Barcha qarzlar yopilgan' };
+    }
+
+    const updates: Prisma.PrismaPromise<any>[] = [];
+    const paidSchedules: number[] = [];
+    let message = '';
+    let monthsPaid = 0;
+    let totalPaid = 0;
+
+    for (const schedule of schedules) {
+      if (remainingAmount >= schedule.expected_amount) {
+        // to‘liq yopiladi
+        remainingAmount -= schedule.expected_amount;
+        totalPaid += schedule.expected_amount;
+        paidSchedules.push(schedule.id);
+        monthsPaid++;
+        updates.push(
+          this.prisma.paymentSchedules.update({
+            where: { id: schedule.id },
+            data: { status: PaymentSchedulesStatus.PAID },
+          }),
+        );
+      } else if (remainingAmount > 0) {
+        totalPaid += remainingAmount;
+        message = `So‘nggi schedule qisman to‘landi, qolgan ${schedule.expected_amount - remainingAmount} so‘m keyinroq to‘lanadi`;
+        updates.push(
+          this.prisma.paymentSchedules.update({
+            where: { id: schedule.id },
+            data: { expected_amount: schedule.expected_amount - remainingAmount },
+          }),
+        );
+        remainingAmount = 0;
+        break;
+      }
+    }
 
     await this.prisma.$transaction([
+      // qarzni kamaytirish
       this.prisma.debt.update({
         where: { id: dto.debtId },
-        data: {
-          duration: { decrement: fullMonths },
-        },
+        data: { duration: { decrement: monthsPaid } },
       }),
-      this.prisma.paymentSchedules.updateMany({
-        where: { id: { in: scheduleIds } },
-        data: { status: PaymentSchedulesStatus.PAID },
+      // payment update'lar
+      ...updates,
+      // history yozish
+      this.prisma.paymentHistory.create({
+        data: {
+          amount: totalPaid,
+          method: 'CASH',
+          sellerId,
+          debterId: debt.debterId,
+          debtId: debt.id,
+          note: message || null,
+        },
       }),
     ]);
 
     return {
-      message: `Qarz ${fullMonths} oyga to'landi`,
-      paidAmount: totalPay,
-      monthsPaid: fullMonths,
-      remainder: dto.amount - totalPay,
+      message:
+        message ||
+        `Qarz ${monthsPaid} oy uchun yopildi. To‘langan summa: ${totalPaid}`,
+      paidAmount: totalPaid,
+      monthsPaid,
+      remainder: remainingAmount,
     };
   }
 
-  // ❗Agar kerak bo‘lsa, bu joylarni ham xuddi shunday himoyalash mumkin:
   create(dto: CreateRepayDto) {
     return { message: 'Mock: repay created', data: dto };
   }
@@ -115,4 +158,34 @@ export class RepayService {
   update(dto: UpdateRepayDto) {
     return { message: 'Mock: repay updated', data: dto };
   }
+
+  async getHistory(sellerId: number, debtId?: number) {
+  return this.prisma.paymentHistory.findMany({
+    where: {
+      sellerId, 
+      ...(debtId ? { debtId } : {}), 
+    },
+    include: {
+      debt: {
+        select: {
+          productName: true,
+          amount: true,
+        },
+      },
+      debter: {
+        select: {
+          name: true,
+          address: true,
+        },
+      },
+      schedule: {
+        select: {
+          date: true,
+          expected_amount: true,
+        },
+      },
+    },
+  });
+}
+
 }

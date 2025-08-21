@@ -11,13 +11,13 @@ export class DebtService {
   const { debterId, productName, date, description, imgOfDebt, amount, duration } = createDebtDto;
 
   const debter = await this.prisma.debter.findFirst({
-    where: { id: debterId, sellerId }
+    where: { id: debterId, sellerId },
   });
   if (!debter) {
     throw new NotFoundException('Debtor not found');
   }
 
-  const monthly_amount = Math.floor(amount / duration); // 🔹 Avtomatik hisoblash
+  const monthly_amount = Math.floor(amount / duration);
 
   const newDebt = await this.prisma.debt.create({
     data: {
@@ -33,12 +33,22 @@ export class DebtService {
 
   if (imgOfDebt && imgOfDebt.length > 0) {
     await this.prisma.imgOfDebt.createMany({
-      data: imgOfDebt.map(name => ({
+      data: imgOfDebt.map((name) => ({
         name,
         debtId: newDebt.id,
       })),
     });
   }
+
+  const schedulesData = Array.from({ length: duration }).map((_, i) => ({
+    debt_id: newDebt.id,
+    date: new Date(new Date(date).setMonth(new Date(date).getMonth() + i)), 
+    expected_amount: monthly_amount,
+  }));
+
+  await this.prisma.paymentSchedules.createMany({
+    data: schedulesData,
+  });
 
   return newDebt;
 }

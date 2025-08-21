@@ -10,4 +10,7 @@ export class CreateNotificationDto {
   @ApiProperty({ example: 2, description: 'Qaysi qarzdorga tegishli' })
   @IsNumber()
   debterId: number;
+  @ApiProperty({ example: 2, description: 'namunani idsni kiriting' })
+  @IsNumber()
+  namunaId: number;
 }
